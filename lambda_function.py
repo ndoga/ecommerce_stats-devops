@@ -1,5 +1,4 @@
-# Matteo Gandelli 03/03/2023
-# GPT Enjoyer
+# E-Commerce Data Solutions
 # Ver. 1.3 lambda_function.py
 # Data recovery from .csv files and analysis
 
