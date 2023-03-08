@@ -1,29 +1,26 @@
-# E-Commerce Data Solutions
-# Ver. 1.3 lambda_function.py
-# Data recovery from .csv files and analysis
-
+import json
+import boto3
 import csv
 from datetime import datetime
 from collections import Counter
-import boto3
 
-s3 = boto3.client("s3")
+s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
-    
-    # prelievo file name
-    bucket_name = "prog1b"
-    file_name = event["Records"][0]["s3"]["object"]["key"]
-    print(file_name)
+    # Recupera il nome del bucket S3 e del file CSV dalla variabile event
+    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    file_name = event['Records'][0]['s3']['object']['key']
+    print(f'Bucket: {bucket_name}, File: {file_name}')
 
-    s3_object = s3.get_object(Bucket=bucket_name, Key=file_name)
-    s3_object_data = s3_object["Body"].read().decode('utf-8').splitlines()
-    csv_data = csv.reader(s3_object_data)
-    
-    # estrazione dati dal file csv
+    # Scarica il file CSV dal bucket S3
+    response = s3.get_object(Bucket=bucket_name, Key=file_name)
+    csv_file = response['Body'].read().decode('utf-8')
+    csv_lines = csv_file.split('\n')
+    csv_reader = csv.DictReader(csv_lines)
+
+    # Analizza i dati del file CSV
     sales_data = []
-    reader = csv.DictReader(s3_object_data, delimiter=',', quotechar='"')
-    for row in reader:
+    for row in csv_reader:
         transaction_id = row['event_type']
         product_id = row['product_id']
         quantity = 1
@@ -34,7 +31,7 @@ def lambda_handler(event, context):
                            'quantity': quantity, 'unit_price': unit_price,
                            'purchase_date': purchase_date, 'geographic_area': geographic_area})
 
-    # analisi dati e generazione report in html
+    # Genera il report in HTML
     product_sales = Counter(item['product_id'] for item in sales_data)
     area_sales = Counter(item['geographic_area'] for item in sales_data)
     monthly_sales = Counter((item['purchase_date'].year, item['purchase_date'].month) for item in sales_data)
@@ -55,5 +52,12 @@ def lambda_handler(event, context):
     report_html += '<li>Mese {}-{} - {} vendite</li>'.format(year, month, monthly_sales[(year, month)])
     report_html += '</ul></body></html>'
 
-    # restituzione report in html
-    return {'statusCode': 200, 'body': report_html}
+    # Scrive il report HTML nel file index.html nel bucket S3
+    s3.put_object(Bucket=bucket_name, Key='index.html', Body=report_html)
+
+    # Restituisce una risposta HTTP con un messaggio di successo
+    response = {
+        'statusCode': 200,
+        'body': json.dumps('Report generato con successo e salvato in S3.')
+    }
+    return response
