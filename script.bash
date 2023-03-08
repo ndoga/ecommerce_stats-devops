@@ -1,3 +1,5 @@
+# */5 * * * * /path/to/script.sh
+
 #!/bin/bash
 
 # Definisci il nome del tuo bucket
