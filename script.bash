@@ -1,20 +1,21 @@
+# Runnare lo script ogni 5 min con crontab
+# crontab -e
 # */5 * * * * /path/to/script.sh
 
 #!/bin/bash
 
 # Definisci il nome del tuo bucket
-BUCKET_NAME="nome-del-tuo-bucket"
+BUCKET_NAME="prog1b"
 
 # Definisci il percorso dove vuoi salvare il file
-LOCAL_DIRECTORY="/path/to/local/directory"
+LOCAL_DIRECTORY="/var/www/html"
 
 # Definisci il nome del file che vuoi scaricare
-FILE_NAME="nome-del-tuo-file"
+FILE_NAME="index.html"
 
 # Inizializza la variabile per il controllo del timestamp dell'ultimo download
 LAST_MODIFIED_TIME=0
 
-while true; do
     # Recupera la data di ultima modifica del file
     OBJECT_LAST_MODIFIED_TIME=$(aws s3api head-object --bucket $BUCKET_NAME --key $FILE_NAME --query 'LastModified' --output text)
 
@@ -26,7 +27,3 @@ while true; do
         # Aggiorna il timestamp dell'ultimo download
         LAST_MODIFIED_TIME=$(date -d "$OBJECT_LAST_MODIFIED_TIME" +%s)
     fi
-
-    # Attendi per un certo intervallo di tempo
-    sleep 300
-done
