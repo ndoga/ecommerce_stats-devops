@@ -14,7 +14,7 @@ LOCAL_DIRECTORY="/var/www/html"
 FILE_NAME="index.html"
 
 # Inizializza la variabile per il controllo del timestamp dell'ultimo download
-LAST_MODIFIED_TIME=
+LAST_MODIFIED_TIME=0
 
     # Recupera la data di ultima modifica del file
     OBJECT_LAST_MODIFIED_TIME=$(aws s3api head-object --bucket $BUCKET_NAME --key $FILE_NAME --query 'LastModified' --output text)
