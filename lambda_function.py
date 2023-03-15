@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     file_name = event['Records'][0]['s3']['object']['key']
     print(f'Bucket: {bucket_name}, File: {file_name}')
 
-    # Scarica il file CSV dal
+    # Scarica il file CSV dal bucket s3
     response = s3.get_object(Bucket=bucket_name, Key=file_name)
     csv_file = response['Body'].read().decode('utf-8')
     csv_lines = csv_file.split('\n')
