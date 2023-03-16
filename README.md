@@ -8,7 +8,7 @@ La repository è organizzata come segue:
 
 conf/: contiene i file di configurazione per l'infrastruttura (e.g. file di configurazione Docker).
 
-data/: contiene i dati di esempio che verranno caricati su S3 e successivamente elaborati su Redshift.
+data/: contiene i dati di esempio che verranno caricati su S3 e successivamente elaborati.
 
 scripts/: contiene gli script di configurazione dell'infrastruttura e gli script di analisi dei dati.
 
