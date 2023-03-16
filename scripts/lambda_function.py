@@ -5,6 +5,7 @@ from datetime import datetime
 from collections import Counter
 
 s3 = boto3.client('s3')
+sns = boto3.client('sns')
 
 def lambda_handler(event, context):
     # Recupera il nome del bucket S3 e del file CSV dalla variabile event
@@ -12,7 +13,7 @@ def lambda_handler(event, context):
     file_name = event['Records'][0]['s3']['object']['key']
     print(f'Bucket: {bucket_name}, File: {file_name}')
 
-    # Scarica il file CSV dal bucket s3
+    # Scarica il file CSV dal bucket S3
     response = s3.get_object(Bucket=bucket_name, Key=file_name)
     csv_file = response['Body'].read().decode('utf-8')
     csv_lines = csv_file.split('\n')
@@ -36,7 +37,7 @@ def lambda_handler(event, context):
     area_sales = Counter(item['geographic_area'] for item in sales_data)
     monthly_sales = Counter((item['purchase_date'].year, item['purchase_date'].month) for item in sales_data)
 
-    report_html = '<html><body><h1>Report vendite</h1>'
+    report_html = '<html><head><meta charset="UTF-8"></head><body><h1>Report vendite</h1>'
     report_html += '<h2>Prodotti più venduti</h2><ul>'
     for product_id, sales_count in product_sales.most_common(10):
         report_html += '<li>Prodotto {} - {} vendite</li>'.format(product_id, sales_count)
@@ -55,9 +56,17 @@ def lambda_handler(event, context):
     # Scrive il report HTML nel file index.html nel bucket S3
     s3.put_object(Bucket=bucket_name, Key='index.html', Body=report_html)
 
+    # Invia il messaggio al topic SNS
+    message = 'Report generato con successo e salvato in S3.'
+    response = sns.publish(
+        TargetArn='arn:aws:sns:us-east-1:196175869927:TopicEs1',
+        Message=message,
+        Subject="SNS Topic"
+    )
+
     # Restituisce una risposta HTTP con un messaggio di successo
     response = {
         'statusCode': 200,
-        'body': json.dumps('Report generato con successo e salvato in S3.')
+        'body': json.dumps({'message': 'Report generato con successo e inviato tramite SNS.'})
     }
     return response
